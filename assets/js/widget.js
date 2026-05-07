@@ -279,12 +279,62 @@
     }
   }
 
+  // Opens the form and pre-selects a service option by its visible label text.
+  // Scans all <select> elements inside the form body for a matching option,
+  // then fires both a native and jQuery change event so WPForms conditional
+  // logic reveals the corresponding sub-dropdown automatically.
+  function openFormWithService(serviceName) {
+    showForm();
+
+    if (!serviceName) {
+      return;
+    }
+
+    window.setTimeout(function () {
+      var formBody = document.querySelector('.watch-form-body');
+      if (!formBody) {
+        return;
+      }
+
+      var selects = formBody.querySelectorAll('select');
+      var targetSelect = null;
+      var targetValue = null;
+
+      for (var i = 0; i < selects.length; i++) {
+        var opts = selects[i].options;
+        for (var j = 0; j < opts.length; j++) {
+          if (opts[j].text.trim() === serviceName) {
+            targetSelect = selects[i];
+            targetValue = opts[j].value;
+            break;
+          }
+        }
+        if (targetSelect) {
+          break;
+        }
+      }
+
+      if (!targetSelect || targetValue === null) {
+        return;
+      }
+
+      targetSelect.value = targetValue;
+
+      targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+      if (typeof window.jQuery !== 'undefined') {
+        window.jQuery(targetSelect).trigger('change');
+      }
+    }, 500);
+  }
+
   window.toggleWidget = toggleWidget;
   window.showForm = showForm;
   window.hideForm = hideForm;
   window.callUs = callUs;
   window.textUs = textUs;
   window.closeWidget = closeWidget;
+  window.openFormWithService = openFormWithService;
 
   document.addEventListener('DOMContentLoaded', function () {
     var elements = getElements();
@@ -322,6 +372,19 @@
 
     document.querySelectorAll('.trigger-instant-actions').forEach(function (button) {
       button.addEventListener('click', toggleWidget);
+    });
+
+    // Service-specific form triggers.
+    // Usage: <button class="trigger-service-form" data-service="Print Media">...</button>
+    // The data-service value must exactly match the visible option label in the WPForms
+    // Select Service field. On click the form opens and that option is pre-selected,
+    // which causes WPForms conditional logic to reveal the matching sub-dropdown.
+    document.querySelectorAll('.trigger-service-form').forEach(function (button) {
+      button.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        openFormWithService(button.getAttribute('data-service') || '');
+      });
     });
 
     bindWidgetFormTracking(elements.widget);
