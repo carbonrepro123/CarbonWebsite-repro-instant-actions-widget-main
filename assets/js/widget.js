@@ -280,9 +280,8 @@
   }
 
   // Opens the form and pre-selects a service option by its visible label text.
-  // Scans all <select> elements inside the form body for a matching option,
-  // then fires both a native and jQuery change event so WPForms conditional
-  // logic reveals the corresponding sub-dropdown automatically.
+  // Fires both a native and jQuery change event so WPForms conditional logic
+  // reveals the matching sub-dropdown automatically.
   function openFormWithService(serviceName) {
     showForm();
 
@@ -374,16 +373,34 @@
       button.addEventListener('click', toggleWidget);
     });
 
-    // Service-specific form triggers.
-    // Usage: <button class="trigger-service-form" data-service="Print Media">...</button>
-    // The data-service value must exactly match the visible option label in the WPForms
-    // Select Service field. On click the form opens and that option is pre-selected,
-    // which causes WPForms conditional logic to reveal the matching sub-dropdown.
-    document.querySelectorAll('.trigger-service-form').forEach(function (button) {
-      button.addEventListener('click', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        openFormWithService(button.getAttribute('data-service') || '');
+    // Service-specific form triggers — no data attributes required.
+    // Add one of these classes to any button/link to open the form directly
+    // with that service pre-selected in the WPForms Select Service field.
+    var serviceClassMap = {
+      'trigger-print-media-form':           'Print Media',
+      'trigger-business-cards-form':        'Business Cards',
+      'trigger-postcards-form':             'Postcards',
+      'trigger-flyers-brochures-form':      'Flyers & Brochures',
+      'trigger-signs-banners-form':         'Signs & Banners',
+      'trigger-posters-form':               'Posters',
+      'trigger-flags-form':                 'Flags',
+      'trigger-boxes-form':                 'Boxes',
+      'trigger-labels-stickers-form':       'Labels & Stickers',
+      'trigger-tablecloths-form':           'Tablecloths',
+      'trigger-tents-form':                 'Tents',
+      'trigger-ncr-forms-form':             'NCR Forms',
+      'trigger-promotional-products-form':  'Promotional Products',
+      'trigger-architect-rendering-form':   'Architect Rendering',
+      'trigger-3d-modeling-form':           '3D Modeling'
+    };
+
+    Object.keys(serviceClassMap).forEach(function (className) {
+      document.querySelectorAll('.' + className).forEach(function (button) {
+        button.addEventListener('click', function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          openFormWithService(serviceClassMap[className]);
+        });
       });
     });
 
